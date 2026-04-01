@@ -617,6 +617,8 @@
     // Endpoint interno da API segura (proxy server-side para o n8n)
     const WEBHOOK_URL = "/lead";
     const WHATSAPP_BASE_URL = "https://api.whatsapp.com/send/?phone=5521976634893&text=";
+    // Chave para ligar/desligar o redirecionamento automatico para WhatsApp.
+    const ENABLE_WHATSAPP_REDIRECT = false;
 
     /* [SECAO 19] CACHE DE ELEMENTOS DO DOM */
     const form = document.getElementById("lead-form");
@@ -699,6 +701,27 @@
         confettiLayer.appendChild(item);
         setTimeout(() => item.remove(), 3200);
       }
+    }
+
+    function showPostSubmitNotice() {
+      form.style.display = "none";
+      statusMessage.className = "status ok";
+      statusMessage.textContent = "";
+
+      const existingNotice = document.getElementById("postSubmitNotice");
+      if (existingNotice) {
+        existingNotice.remove();
+      }
+
+      const notice = document.createElement("div");
+      notice.id = "postSubmitNotice";
+      notice.className = "status ok";
+      notice.style.marginTop = "6px";
+      notice.style.textAlign = "center";
+      notice.style.fontSize = "1rem";
+      notice.style.fontWeight = "600";
+      notice.textContent = "Cadastro realizado, retorne ao WhatsApp para continuar seu atendimento.";
+      form.parentElement.appendChild(notice);
     }
 
     /* [SECAO 23] MENSAGEM DE WHATSAPP POS-CADASTRO */
@@ -1364,8 +1387,8 @@
         runConfetti(150);
         statusMessage.className = webhookSent ? "status ok" : "status error";
         statusMessage.textContent = webhookSent
-          ? "Cadastro realizado! Redirecionando para o WhatsApp..."
-          : "Cadastro iniciado. Redirecionando para o WhatsApp...";
+          ? "Cadastro realizado!"
+          : "Cadastro iniciado.";
 
         // Monta mensagem de contexto comercial para WhatsApp.
         const message = buildWhatsappMessage({
@@ -1384,16 +1407,25 @@
           addressComplement: addressComplementInput.value.trim()
         });
         const redirectUrl = `${WHATSAPP_BASE_URL}${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
-
-        // Delay curto para o usuario ler feedback de sucesso.
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 1300);
         localStorage.removeItem(DRAFT_STORAGE_KEY);
+
+        if (ENABLE_WHATSAPP_REDIRECT) {
+          // Delay curto para o usuario ler feedback de sucesso.
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 1300);
+        } else {
+          showPostSubmitNotice();
+        }
       } catch (error) {
         statusMessage.classList.add("error");
         statusMessage.textContent = "Não foi possível processar o cadastro. Tente novamente.";
       } finally {
+        if (!ENABLE_WHATSAPP_REDIRECT) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Enviar Cadastro";
+          return;
+        }
         setTimeout(() => {
           submitBtn.disabled = false;
           submitBtn.textContent = "Enviar Cadastro";
