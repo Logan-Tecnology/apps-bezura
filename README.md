@@ -220,7 +220,7 @@ Este projeto adota **SemVer** (`MAJOR.MINOR.PATCH`):
 
 ### 📍 Versão atual
 
-- **Formulário/API:** `v1.4.0` (rodapé e chave de rascunho `localStorage` alinhadas).
+- **Formulário/API:** `v1.4.1` (rodapé e chave de rascunho `localStorage` alinhadas).
 - Inclui opção **Não sei o CEP**, validação de `cep` no backend para CEP numérico ou texto `Não informado`, e compose Traefik alinhado à rede **`proxy`** + **`letsencrypt`**.
 
 ## 📝 Histórico de versões (detalhado)
