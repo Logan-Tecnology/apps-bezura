@@ -20,7 +20,7 @@
     holder.id = holderId;
     holder.setAttribute("aria-label", "Cadastro Bezura");
     holder.style.cssText =
-      "position:fixed;bottom:16px;right:16px;z-index:2147483646;width:min(420px,calc(100vw - 32px));height:min(560px,calc(100vh - 32px));border:none;border-radius:16px;overflow:hidden;box-shadow:0 18px 40px rgba(27,63,138,0.28);";
+      "position:fixed;bottom:16px;right:16px;z-index:2147483646;width:min(568px,calc(100vw - 32px));height:min(660px,calc(100vh - 32px));border:none;border-radius:16px;overflow:hidden;box-shadow:0 18px 40px rgba(27,63,138,0.28);";
 
     var iframe = d.createElement("iframe");
     var contextUrl = encodeURIComponent(w.location.href);
