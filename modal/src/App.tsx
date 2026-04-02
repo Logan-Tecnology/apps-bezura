@@ -14,6 +14,25 @@ const URL_MSG_TYPES = new Set([
   MSG_PARENT_URL
 ]);
 
+function CopyIcon() {
+  return (
+    <svg
+      className="bubble-copy-icon"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
 function extractSessionId(url: string): string | null {
   if (!url) return null;
   try {
@@ -156,7 +175,10 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <img src="/logan-technology-logomarca-.png" alt="Logan Technology" />
+        <h1 className="app-header-title">Logan Tools</h1>
+        <div className="app-header-brand">
+          <img src="/logan-technology-logomarca-.png" alt="Logan Technology" />
+        </div>
       </header>
       <main className="app-main">
         {!registrationUrl ? (
@@ -200,22 +222,34 @@ export default function App() {
           </>
         ) : null}
 
-        <button
-          type="button"
-          className="bubble"
-          onClick={copyLink}
-          disabled={!registrationUrl}
+        <div
+          className={
+            "bubble" + (!registrationUrl ? " bubble--waiting" : " bubble--ready")
+          }
         >
           <span className="bubble-title">Formulário de Cadastro</span>
           {registrationUrl ? (
-            <span className="bubble-url">{registrationUrl}</span>
-          ) : null}
-          <span className="bubble-hint">
-            {registrationUrl
-              ? "Clique para copiar o link com o ID da sessão."
-              : "Use o botão acima ou cole a URL do chat. O ID é obtido do trecho /sessions/{uuid}."}
-          </span>
-        </button>
+            <div className="bubble-link-row">
+              <p className="bubble-url" title={registrationUrl}>
+                {registrationUrl}
+              </p>
+              <button
+                type="button"
+                className="bubble-copy"
+                onClick={copyLink}
+                aria-label="Copiar link do formulário"
+                title="Copiar"
+              >
+                <CopyIcon />
+              </button>
+            </div>
+          ) : (
+            <p className="bubble-hint">
+              Use o botão acima ou cole a URL do chat. O ID vem do trecho{" "}
+              <code>/sessions/</code> na URL.
+            </p>
+          )}
+        </div>
         {copied ? <p className="toast">Link copiado.</p> : null}
       </main>
     </div>
