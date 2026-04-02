@@ -146,6 +146,8 @@ No backend (`api/.env` — use `api/.env.example` como modelo):
 - `N8N_WEBHOOK_TOKEN`: segredo enviado no header `x-webhook-token`
 - `BETEL_ACCESS_TOKEN` / `BETEL_SECRET_ACCESS_TOKEN`: credenciais da API Betel para checagem de duplicidade por documento antes do webhook
 
+O payload enviado ao n8n pode incluir **`chatSessionId`** (UUID da sessão do chat). Para mapear esse campo nos nós **Edit Fields** e configurar o **HTTP Request** da API Helena (`POST /chat/v1/session/{id}/message`), veja [docs/n8n-helena-chatSessionId.md](docs/n8n-helena-chatSessionId.md).
+
 ## 🚀 Execução local
 
 Como é estático, você pode abrir diretamente no navegador:
