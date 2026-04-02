@@ -205,6 +205,13 @@ body {
   text-align: center;
 }
 
+.actions-hint code {
+  font-size: 0.68rem;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
 .paste-panel {
   width: 100%;
   max-width: 100%;

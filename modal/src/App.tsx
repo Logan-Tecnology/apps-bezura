@@ -68,10 +68,27 @@ export default function App() {
       setContextUrl(fromQuery);
       return;
     }
-    const ref = document.referrer;
-    if (ref && !isReferrerLikelyStripped(ref)) {
-      setContextUrl(ref);
-    }
+
+    let cancelled = false;
+    const tryReferrer = () => {
+      if (cancelled) return;
+      setContextUrl((prev) => {
+        if (prev) return prev;
+        const ref = document.referrer;
+        if (!ref) return prev;
+        if (extractSessionId(ref) || !isReferrerLikelyStripped(ref)) return ref;
+        return prev;
+      });
+    };
+
+    tryReferrer();
+    const timeouts = [40, 200, 600].map((ms) =>
+      window.setTimeout(tryReferrer, ms)
+    );
+    return () => {
+      cancelled = true;
+      timeouts.forEach((id) => window.clearTimeout(id));
+    };
   }, []);
 
   useEffect(() => {
@@ -153,8 +170,10 @@ export default function App() {
                 Gerar link do formulário
               </button>
               <p className="actions-hint">
-                Envia um pedido à página do chat pela URL completa. Se nada
-                mudar, cole a URL da barra de endereços abaixo.
+                Tenta obter a URL automaticamente. Se não aparecer o link,
+                cole a URL do chat abaixo — ou peça ao time do Bezura para
+                passar a URL na <code>src</code> do iframe (veja{" "}
+                <code>modal/host-snippet.txt</code> no projeto).
               </p>
             </div>
             <div className="paste-panel">

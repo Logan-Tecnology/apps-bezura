@@ -4,7 +4,8 @@
  *
  * Opcional: data-cadastro-origin="https://cadastro.bezura.com.br"
  *
- * O iframe recebe a URL completa da aba via postMessage (referrer costuma vir só a origem entre subdomínios).
+ * O iframe recebe a URL via ?contextUrl= na src e por postMessage após o load.
+ * referrerPolicy unsafe-url ajuda document.referrer a trazer path completo (quando o browser permitir).
  *
  * Opcional no app pai (ex.: app.bezura.com.br), se o iframe não usar ?contextUrl= na src:
  * window.addEventListener("message", function (e) {
@@ -52,7 +53,7 @@
     iframe.src = MODAL_ORIGIN + "/modal/?contextUrl=" + contextUrl;
     iframe.title = "Cadastro Bezura";
     iframe.style.cssText = "width:100%;height:100%;border:0;background:#fff;";
-    iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
+    iframe.setAttribute("referrerpolicy", "unsafe-url");
 
     iframe.addEventListener("load", function () {
       sendPageUrlToIframe(iframe);

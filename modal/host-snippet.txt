@@ -1,0 +1,38 @@
+Integração sem colar URL (app pai, ex.: app.bezura.com.br)
+============================================================
+
+Por segurança, um iframe em cadastro.bezura.com.br NÃO pode ler a URL de
+app.bezura.com.br sozinho. Uma destas opções no HOST resolve:
+
+1) RECOMENDADO — incluir a URL atual na src do iframe
+-------------------------------------------------------
+src={
+  "https://cadastro.bezura.com.br/modal/?contextUrl=" +
+  encodeURIComponent(window.location.href)
+}
+
+2) Referrer com path completo — no elemento iframe
+----------------------------------------------------
+<iframe
+  referrerPolicy="unsafe-url"
+  src="https://cadastro.bezura.com.br/modal/"
+  ...
+/>
+A página do chat não pode usar Referrer-Policy que esconda o path (ex. strict-origin).
+
+3) Responder ao pedido do modal (postMessage)
+---------------------------------------------
+window.addEventListener("message", (e) => {
+  if (e.origin !== "https://cadastro.bezura.com.br") return;
+  if (e.data?.type === "cadastro-bezura-request-page-url") {
+    e.source?.postMessage(
+      { type: "cadastro-bezura-context-url", url: location.href },
+      e.origin
+    );
+  }
+});
+
+4) Script oficial na página do chat
+-----------------------------------
+<script src="https://cadastro.bezura.com.br/modal/cadastro-modal-loader.js" defer></script>
+(já define ?contextUrl= + postMessage após o load)
