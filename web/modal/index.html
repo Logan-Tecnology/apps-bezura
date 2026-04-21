@@ -73,24 +73,28 @@
 
     /* LIBRARY LAYOUT */
     .app-library {
-      width: min(100%, 800px);
-      padding: 30px;
+      width: 100%;
+      height: 100vh;
+      padding: 60px;
       z-index: 10;
-      text-align: center;
       display: flex;
       flex-direction: column;
-      height: 100vh;
       justify-content: center;
+      align-items: center;
+      position: relative;
     }
 
     .library-header {
-      margin-bottom: 40px;
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      text-align: right;
     }
 
     .library-header h1 {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       margin: 0;
       background: linear-gradient(to right, #fff, #94a3b8);
       -webkit-background-clip: text;
@@ -99,98 +103,80 @@
 
     .library-header p {
       color: var(--text-muted);
-      margin: 8px 0 0;
-      font-size: 0.95rem;
+      margin: 5px 0 0;
+      font-size: 0.85rem;
+      opacity: 0.8;
     }
 
     /* APP GRID */
     .app-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 20px;
-      padding: 10px;
-      overflow-y: auto;
-      max-height: 80vh;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 40px;
+      justify-content: center;
+      align-items: start;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    /* APP ITEM (Wrapper) */
+    .app-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s ease;
+    }
+
+    .app-item:hover {
+      transform: translateY(-5px);
     }
 
     /* GLASS CARD */
     .app-card {
       background: var(--glass);
       border: 1px solid var(--glass-border);
-      border-radius: 24px;
+      border-radius: 28px;
       width: 160px;
       height: 160px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      text-decoration: none;
-      color: inherit;
-      padding: 16px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
     }
 
-    .app-card:hover {
+    .app-item:hover .app-card {
       background: var(--glass-hover);
       border-color: var(--primary);
-      transform: translateY(-5px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 15px var(--primary-glow);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 20px var(--primary-glow);
     }
 
-    .app-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--primary), #60a5fa);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-      transition: transform 0.3s ease;
+    /* APP ICON IMAGE */
+    .app-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .app-card:hover .app-icon {
-      transform: scale(1.1) rotate(5deg);
-      animation: pulseGlow 1.5s infinite;
+    .app-item:hover .app-icon-img {
+      transform: scale(1.1);
     }
 
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3); }
-      50% { box-shadow: 0 8px 30px rgba(59, 130, 246, 0.6); }
-      100% { box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3); }
-    }
-
-    .app-icon svg {
-      width: 24px;
-      height: 24px;
-      color: white;
-    }
-
+    /* APP NAME (Outside Card) */
     .app-name {
       font-weight: 600;
       font-size: 0.95rem;
-    }
-
-    .app-desc {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: none; /* Inicia oculto, aparece no hover se quiser */
-    }
-
-    /* CUSTOM SCROLLBAR */
-    .app-grid::-webkit-scrollbar {
-      width: 6px;
-    }
-    .app-grid::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .app-grid::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.02em;
     }
 
     /* ANIMATIONS */
@@ -212,13 +198,21 @@
     }
 
     /* RESPONSIVENESS */
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
+      .library-header {
+        position: relative;
+        top: 0;
+        right: 0;
+        text-align: center;
+        margin-bottom: 40px;
+      }
       .app-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+        gap: 25px;
       }
-      .app-library {
-        padding: 20px;
+      .app-card {
+        width: 140px;
+        height: 140px;
       }
     }
   </style>
@@ -228,18 +222,17 @@
 
   <main class="app-library">
     <header class="library-header">
-      <h1>Minha Biblioteca</h1>
-      <p>Selecione uma ferramenta para começar</p>
+      <h1>Biblioteca de aplicativos</h1>
+      <p>Acesso rápido às suas ferramentas</p>
     </header>
 
     <div class="app-grid">
       <!-- AVISOS INTERNOS -->
-      <a href="#" class="app-card">
-        <div class="app-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+      <a href="#" class="app-item">
+        <div class="app-card">
+          <img src="../avisos-recorrente.png" alt="Avisos Internos" class="app-icon-img">
         </div>
         <span class="app-name">Avisos Internos</span>
-        <span class="app-desc">Gerencie comunicados para atendentes</span>
       </a>
     </div>
   </main>
