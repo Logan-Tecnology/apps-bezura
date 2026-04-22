@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bezura | Biblioteca de Apps</title>
+  <title>Bezura | Gestão de Lembretes</title>
   <link rel="icon" type="image/png" href="../logan-logo.png" />
   <style>
     /* DESIGN TOKENS */
@@ -11,11 +11,11 @@
       --bg-dark: #0a1737;
       --glass: rgba(255, 255, 255, 0.08);
       --glass-border: rgba(255, 255, 255, 0.12);
-      --glass-hover: rgba(255, 255, 255, 0.15);
       --text: #ffffff;
       --text-muted: #cbd5e1;
       --primary: #3b82f6;
-      --primary-glow: rgba(59, 130, 246, 0.5);
+      --primary-hover: #2563eb;
+      --success: #10b981;
     }
 
     * { box-sizing: border-box; }
@@ -32,27 +32,7 @@
       background-size: 180% 180%;
       animation: gradientShift 18s ease-in-out infinite;
       min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* BACKGROUND ANIMATIONS */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: -20% -10%;
-      pointer-events: none;
-      z-index: -1;
-      background:
-        radial-gradient(closest-side, rgba(37, 99, 235, 0.2), transparent 72%) 10% 24% / 34% 34% no-repeat,
-        radial-gradient(closest-side, rgba(59, 130, 246, 0.17), transparent 72%) 82% 16% / 26% 26% no-repeat,
-        radial-gradient(closest-side, rgba(30, 64, 175, 0.14), transparent 72%) 74% 76% / 31% 31% no-repeat,
-        radial-gradient(closest-side, rgba(96, 165, 250, 0.12), transparent 72%) 28% 84% / 23% 23% no-repeat;
-      filter: blur(12px);
-      animation: blobsFloat 18s ease-in-out infinite alternate;
+      overflow-x: hidden;
     }
 
     #particles {
@@ -60,7 +40,6 @@
       inset: 0;
       z-index: -1;
       pointer-events: none;
-      overflow: hidden;
     }
 
     .particle {
@@ -71,197 +50,696 @@
       animation: floatUp linear infinite;
     }
 
-    /* LIBRARY LAYOUT */
-    .app-library {
+    /* LAYOUT CONTAINERS */
+    .view-container {
       width: 100%;
-      height: 100vh;
-      padding: 60px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      min-height: 100vh;
+      padding: 40px;
+      display: none;
       position: relative;
     }
 
-    .library-header {
+    .view-active { display: flex; flex-direction: column; align-items: flex-start; }
+
+    /* HEADER */
+    .top-header {
       position: absolute;
       top: 40px;
       right: 40px;
       text-align: right;
     }
 
-    .library-header h1 {
+    .top-header h1 {
       font-size: 1.5rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
       margin: 0;
       background: linear-gradient(to right, #fff, #94a3b8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .library-header p {
-      color: var(--text-muted);
-      margin: 5px 0 0;
-      font-size: 0.85rem;
-      opacity: 0.8;
+    /* BACK ARROW */
+    .back-arrow {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: all 0.3s ease;
     }
 
-    /* APP GRID */
+    .back-arrow:hover { opacity: 1; transform: scale(1.1); }
+
+    .back-arrow svg { width: 40px; height: 40px; color: white; }
+
+    /* APP GRID (Library) */
     .app-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 40px;
-      justify-content: center;
-      align-items: start;
-      max-width: 1000px;
+      gap: 30px;
+      margin-top: 60px;
       width: 100%;
     }
 
-    /* APP ITEM (Wrapper) */
     .app-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
       text-decoration: none;
       color: inherit;
       transition: transform 0.3s ease;
     }
 
-    .app-item:hover {
-      transform: translateY(-5px);
-    }
+    .app-item:hover { transform: translateY(-5px); }
 
-    /* GLASS CARD */
-    .app-card {
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: 28px;
-      width: 160px;
-      height: 160px;
+    .app-icon-pure {
+      width: 140px;
+      height: 140px;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      position: relative;
-      overflow: hidden;
     }
 
-    .app-item:hover .app-card {
-      background: var(--glass-hover);
-      border-color: var(--primary);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 20px var(--primary-glow);
-    }
-
-    /* APP ICON IMAGE */
-    .app-icon-img {
+    .app-icon-pure img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      object-fit: contain;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
     }
 
-    .app-item:hover .app-icon-img {
-      transform: scale(1.1);
+    .app-name { font-weight: 600; font-size: 0.9rem; }
+
+    /* FORM (Reminders) */
+    .form-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
     }
 
-    /* APP NAME (Outside Card) */
-    .app-name {
-      font-weight: 600;
-      font-size: 0.95rem;
-      text-align: center;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      letter-spacing: 0.02em;
+    .input-group { display: flex; flex-direction: column; gap: 8px; }
+
+    .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); padding-left: 4px; }
+
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+
+    input, select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
     }
+
+    input:focus, select:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.3); box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); }
+
+    input:disabled, select:disabled { opacity: 0.6; cursor: not-allowed; background: rgba(255, 255, 255, 0.05); }
+
+    /* Estilo para ícones de calendário e relógio */
+    ::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+    .btn-save {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 24px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-save:hover { background: var(--primary-hover); transform: scale(1.02); }
+
+    .btn-save:disabled { background: var(--success); cursor: default; }
+
+    .status-msg { font-size: 0.8rem; text-align: center; margin-top: -10px; min-height: 1.2em; }
 
     /* ANIMATIONS */
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes floatUp { 0% { transform: translateY(110vh) scale(0.2); opacity: 0; } 100% { transform: translateY(-10vh) scale(1); opacity: 0; } }
+
+    /* DASHBOARD LAYOUT */
+    .dashboard-header {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto 30px auto;
     }
 
-    @keyframes blobsFloat {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(3%, -2%) scale(1.05); }
+    .header-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 16px 24px;
+      border-radius: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    @keyframes floatUp {
-      0% { transform: translateY(110vh) scale(0.2); opacity: 0; }
-      30% { opacity: 0.5; }
-      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    .header-card .label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .header-card .value { font-size: 1.1rem; font-weight: 600; color: #fff; font-family: monospace; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 30px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    /* RESPONSIVENESS */
-    @media (max-width: 600px) {
-      .library-header {
-        position: relative;
-        top: 0;
-        right: 0;
-        text-align: center;
-        margin-bottom: 40px;
-      }
-      .app-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-      }
-      .app-card {
-        width: 140px;
-        height: 140px;
-      }
+    .form-card-wide, .table-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .form-card-wide h3, .table-card h3 { margin-top: 0; margin-bottom: 24px; font-size: 1.2rem; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+    .phone-input { display: flex; gap: 8px; }
+    .ddi-select { width: 90px; cursor: pointer; }
+
+    .datetime-row { display: flex; gap: 8px; }
+    .datetime-row input { flex: 1; }
+
+    .freq-options { margin-top: 12px; padding: 16px; background: rgba(0,0,0,0.15); border-radius: 12px; }
+
+    .days-selector { display: flex; gap: 6px; margin-top: 10px; }
+    .day-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--glass-border);
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+    .day-btn.active { background: var(--primary); border-color: var(--primary); }
+
+    textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: white;
+      font-size: 0.95rem;
+      outline: none;
+      resize: none;
+      transition: all 0.3s ease;
+    }
+
+    /* TABLE STYLES */
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { text-align: left; padding: 12px; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--glass-border); }
+    td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 4px;
+      transition: all 0.2s;
+    }
+    .action-btn:hover { background: rgba(255,255,255,0.1); }
+
+    @media (max-width: 1000px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .dashboard-header { flex-direction: column; }
     }
   </style>
 </head>
 <body>
   <div id="particles"></div>
 
-  <main class="app-library">
-    <header class="library-header">
+  <!-- VIEW: BIBLIOTECA -->
+  <main id="view-library" class="view-container">
+    <header class="top-header">
       <h1>Biblioteca de aplicativos</h1>
-      <p>Acesso rápido às suas ferramentas</p>
     </header>
 
     <div class="app-grid">
-      <!-- AVISOS INTERNOS -->
-      <a href="#" class="app-item">
-        <div class="app-card">
-          <img src="../avisos-recorrente.png" alt="Avisos Internos" class="app-icon-img">
+      <a href="#" id="link-reminders" class="app-item">
+        <div class="app-icon-pure">
+          <img src="../avisos-recorrente.png" alt="Lembretes">
         </div>
-        <span class="app-name">Avisos Internos</span>
+        <span class="app-name">Lembretes</span>
       </a>
     </div>
   </main>
 
+  <!-- VIEW: LEMBRETES -->
+  <main id="view-reminders" class="view-container">
+    <div class="back-arrow" id="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </div>
+
+    <!-- HEADER DINÂMICO (Aparece quando logado) -->
+    <div id="dashboard-header" class="dashboard-header" style="display: none;">
+      <div class="header-card">
+        <span class="label">ID Bezura</span>
+        <span class="value" id="header-id">---</span>
+      </div>
+      <div class="header-card">
+        <span class="label">Token API</span>
+        <span class="value" id="header-token">---</span>
+      </div>
+    </div>
+
+    <!-- TELA DE LOGIN (Configuração de Token) -->
+    <div id="login-card" class="form-card">
+      <header class="card-header">
+        <h1>Configurar Lembretes</h1>
+        <p>Insira seu token para gerenciar seus avisos.</p>
+      </header>
+      
+      <div class="input-group">
+        <label>ID Bezura</label>
+        <input type="text" id="field-client-id" disabled>
+      </div>
+
+      <div class="input-group">
+        <label>Token API</label>
+        <div class="input-wrapper">
+          <input type="text" id="field-token" placeholder="Insira seu token Api Bezura...">
+        </div>
+      </div>
+
+      <button id="btn-submit" class="btn-save">
+        <span>Acessar Painel</span>
+      </button>
+
+      <div id="form-status" class="status-msg"></div>
+    </div>
+
+    <!-- DASHBOARD DE GESTÃO (Aparece quando logado) -->
+    <div id="dashboard-content" class="dashboard-grid" style="display: none;">
+      
+      <!-- FORMULÁRIO: NOVO LEMBRETE -->
+      <section class="form-card-wide">
+        <h3>🚀 Novo Lembrete</h3>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Nome do Lembrete</label>
+            <input type="text" id="rem-name" placeholder="Ex: Aviso de Cobrança">
+          </div>
+          <div class="input-group">
+            <label>Sua Conta (Origem)</label>
+            <select id="rem-origin">
+              <option value="">Carregando números...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label>Destino (WhatsApp)</label>
+            <div class="phone-input">
+              <select id="rem-country" class="ddi-select">
+                <option value="55">🇧🇷 +55</option>
+                <option value="1">🇺🇸 +1</option>
+                <option value="351">🇵🇹 +351</option>
+              </select>
+              <input type="text" id="rem-dest" placeholder="Ex: 11999999999">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Data e Hora</label>
+            <div class="datetime-row">
+              <input type="date" id="rem-date">
+              <input type="time" id="rem-time">
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Recorrência</label>
+          <select id="rem-freq" onchange="toggleRecurrenceFields()">
+            <option value="once">Uma vez</option>
+            <option value="daily">Diária (Todo dia)</option>
+            <option value="weekly">Semanal (Escolher dia)</option>
+            <option value="monthly">Mensal (Intervalo)</option>
+          </select>
+        </div>
+
+        <!-- CAMPOS DINÂMICOS DE RECORRÊNCIA -->
+        <div id="freq-options" class="freq-options">
+          <div id="opt-weekly" style="display:none;">
+            <label>Dias da Semana</label>
+            <div class="days-selector">
+              <button class="day-btn" data-day="1">S</button>
+              <button class="day-btn" data-day="2">T</button>
+              <button class="day-btn" data-day="3">Q</button>
+              <button class="day-btn" data-day="4">Q</button>
+              <button class="day-btn" data-day="5">S</button>
+              <button class="day-btn" data-day="6">S</button>
+              <button class="day-btn" data-day="0">D</button>
+            </div>
+          </div>
+          <div id="opt-monthly" style="display:none;">
+            <div class="form-row">
+              <div class="input-group">
+                <label>Intervalo (Meses)</label>
+                <input type="number" id="rem-month-interval" placeholder="Ex: 1" min="1" value="1">
+              </div>
+              <div class="input-group">
+                <label>Dia do Mês</label>
+                <input type="number" id="rem-month-day" placeholder="Ex: 10" min="1" max="31">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Mensagem</label>
+          <textarea id="rem-msg" placeholder="Digite sua mensagem aqui..." rows="4"></textarea>
+        </div>
+
+        <button id="btn-save-rem" class="btn-save">Agendar Lembrete</button>
+      </section>
+
+      <!-- TABELA: LEMBRETES ATIVOS -->
+      <section class="table-card">
+        <h3>📅 Meus Lembretes</h3>
+        <div class="table-wrapper">
+          <table id="table-reminders">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Destino</th>
+                <th>Próximo Envio</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="reminders-list">
+              <!-- JS Injetará aqui -->
+              <tr>
+                <td colspan="5" style="text-align:center; padding: 20px;">Nenhum lembrete agendado.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
   <script>
+    /* CONFIGURATION - Substitua pela URL do seu Webhook n8n */
+    const N8N_WEBHOOK_URL = "https://n8n.bezura.cloud/webhook/FhzponMMzHWYWQVG";
+
+    /* PARTICLES */
     function createParticles() {
-      const particleContainer = document.getElementById("particles");
-      const particleCount = 60;
-
-      for (let i = 0; i < particleCount; i++) {
+      const container = document.getElementById("particles");
+      for (let i = 0; i < 40; i++) {
         const p = document.createElement("div");
-        p.classList.add("particle");
-
+        p.className = "particle";
         const size = Math.random() * 4 + 1;
-        const left = Math.random() * 100;
-        const duration = Math.random() * 10 + 10;
-        const delay = Math.random() * 10;
-
-        p.style.width = `${size}px`;
-        p.style.height = `${size}px`;
-        p.style.left = `${left}%`;
-        p.style.animationDuration = `${duration}s`;
-        p.style.animationDelay = `-${delay}s`;
-
-        particleContainer.appendChild(p);
+        p.style.width = p.style.height = `${size}px`;
+        p.style.left = `${Math.random() * 100}%`;
+        p.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        p.style.animationDelay = `-${Math.random() * 10}s`;
+        container.appendChild(p);
       }
     }
 
+    /* API INTEGRATION */
+    function maskToken(token) {
+      if (!token) return "---";
+      if (token.length <= 9) return token;
+      return token.substring(0, 9) + "**********";
+    }
+
+    function toggleRecurrenceFields() {
+      const freq = document.getElementById('rem-freq').value;
+      document.getElementById('opt-weekly').style.display = freq === 'weekly' ? 'block' : 'none';
+      document.getElementById('opt-monthly').style.display = freq === 'monthly' ? 'block' : 'none';
+    }
+
+    async function checkExistingToken(clientId) {
+      if (!clientId) return;
+      const loginCard = document.getElementById('login-card');
+      const dashContent = document.getElementById('dashboard-content');
+      const dashHeader = document.getElementById('dashboard-header');
+      const headerId = document.getElementById('header-id');
+      const headerToken = document.getElementById('header-token');
+
+      try {
+        const res = await fetch(`${N8N_WEBHOOK_URL}?id_cliente=${clientId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const savedToken = data.token || data.Token_API || (Array.isArray(data) && (data[0]?.token || data[0]?.Token_API));
+          
+          if (savedToken) {
+            // MODO LOGADO
+            loginCard.style.display = 'none';
+            dashContent.style.display = 'grid';
+            dashHeader.style.display = 'flex';
+            headerId.textContent = clientId;
+            headerToken.textContent = maskToken(savedToken);
+            
+            // Carregar dados complementares
+            loadOriginNumbers(clientId);
+            loadReminders(clientId);
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao consultar token:", e);
+      }
+    }
+
+    async function loadOriginNumbers(clientId) {
+      const select = document.getElementById('rem-origin');
+      try {
+        const res = await fetch(`${N8N_WEBHOOK_URL}?action=list_numbers&id_cliente=${clientId}`);
+        if (res.ok) {
+          const numbers = await res.json();
+          select.innerHTML = numbers.map(n => `<option value="${n}">${n}</option>`).join('');
+        }
+      } catch (e) {
+        select.innerHTML = '<option value="">Erro ao carregar</option>';
+      }
+    }
+
+    async function loadReminders(clientId) {
+      const tbody = document.getElementById('reminders-list');
+      try {
+        const res = await fetch(`${N8N_WEBHOOK_URL}?action=list_reminders&id_cliente=${clientId}`);
+        if (res.ok) {
+          const reminders = await res.json();
+          if (reminders.length > 0) {
+            tbody.innerHTML = reminders.map(r => `
+              <tr>
+                <td>${r.nome}</td>
+                <td>+${r.ddi}${r.destino}</td>
+                <td>${new Date(r.proximo_envio).toLocaleString()}</td>
+                <td><span class="status-badge status-active">${r.status}</span></td>
+                <td>
+                  <button class="action-btn" title="Editar">✏️</button>
+                  <button class="action-btn" title="Pausar">⏸️</button>
+                  <button class="action-btn" title="Excluir">🗑️</button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar lembretes:", e);
+      }
+    }
+
+    async function saveToken(clientId, token) {
+      const status = document.getElementById('form-status');
+      const btn = document.getElementById('btn-submit');
+      const tokenInput = document.getElementById('field-token');
+
+      if (!token) {
+        status.textContent = "⚠️ Por favor, insira um token.";
+        status.style.color = "#fbbf24";
+        return;
+      }
+
+      btn.innerHTML = "Processando...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'save_token', id_cliente: clientId, token: token })
+        });
+
+        if (res.ok) {
+          status.textContent = "✅ Configurado com sucesso!";
+          status.style.color = "#10b981";
+          setTimeout(() => checkExistingToken(clientId), 1000);
+        } else {
+          throw new Error("Erro no servidor");
+        }
+      } catch (e) {
+        status.textContent = "❌ Erro ao salvar. Tente novamente.";
+        status.style.color = "#ef4444";
+        btn.innerHTML = "Acessar Painel";
+        btn.disabled = false;
+      }
+    }
+
+    /* REMINDER ACTIONS */
+    async function scheduleReminder() {
+      const btn = document.getElementById('btn-save-rem');
+      const clientId = document.getElementById('header-id').textContent;
+      
+      const data = {
+        action: 'create_reminder',
+        id_cliente: clientId,
+        nome: document.getElementById('rem-name').value,
+        origem: document.getElementById('rem-origin').value,
+        ddi: document.getElementById('rem-country').value,
+        destino: document.getElementById('rem-dest').value,
+        data: document.getElementById('rem-date').value,
+        hora: document.getElementById('rem-time').value,
+        recorrencia: document.getElementById('rem-freq').value,
+        mensagem: document.getElementById('rem-msg').value,
+        dias_semana: Array.from(document.querySelectorAll('.day-btn.active')).map(b => b.dataset.day),
+        intervalo_mes: document.getElementById('rem-month-interval').value,
+        dia_mes: document.getElementById('rem-month-day').value
+      };
+
+      btn.innerHTML = "Agendando...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          alert("✅ Lembrete agendado com sucesso!");
+          loadReminders(clientId);
+          btn.innerHTML = "Agendar Lembrete";
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("❌ Erro ao agendar.");
+        btn.innerHTML = "Agendar Lembrete";
+        btn.disabled = false;
+      }
+    }
+
+    /* ROUTING */
+    function resolveRoute() {
+      const path = window.location.pathname;
+      const segments = path.split('/').filter(Boolean);
+      const viewLib = document.getElementById('view-library');
+      const viewRem = document.getElementById('view-reminders');
+      const fieldClientId = document.getElementById('field-client-id');
+      const tokenInput = document.getElementById('field-token');
+      const btn = document.getElementById('btn-submit');
+      const status = document.getElementById('form-status');
+
+      // Reset Visibility
+      viewLib.classList.remove('view-active');
+      viewRem.classList.remove('view-active');
+      document.getElementById('login-card').style.display = 'flex';
+      document.getElementById('dashboard-content').style.display = 'none';
+      document.getElementById('dashboard-header').style.display = 'none';
+
+      if (segments[0] === 'lembretes') {
+        const clientId = segments[1] || '';
+        viewRem.classList.add('view-active');
+        fieldClientId.value = clientId;
+        
+        tokenInput.value = "";
+        tokenInput.disabled = false;
+        btn.innerHTML = "Acessar Painel";
+        btn.disabled = false;
+        status.textContent = "";
+
+        checkExistingToken(clientId);
+        btn.onclick = () => saveToken(clientId, tokenInput.value);
+        document.getElementById('btn-save-rem').onclick = scheduleReminder;
+      } else {
+        const clientId = segments[0] || '';
+        viewLib.classList.add('view-active');
+        document.getElementById('link-reminders').onclick = (e) => {
+          e.preventDefault();
+          window.history.pushState({}, '', `/lembretes/${clientId}`);
+          resolveRoute();
+        };
+      }
+    }
+
+    /* EVENTS */
+    document.querySelectorAll('.day-btn').forEach(btn => {
+      btn.onclick = () => btn.classList.toggle('active');
+    });
+
+    document.getElementById('btn-back').onclick = () => {
+      const segments = window.location.pathname.split('/').filter(Boolean);
+      const clientId = segments[0] === 'lembretes' ? (segments[1] || '') : '';
+      window.history.pushState({}, '', `/${clientId}`);
+      resolveRoute();
+    };
+
+    window.onpopstate = resolveRoute;
+
+    /* INIT */
     createParticles();
+    resolveRoute();
   </script>
 </body>
 </html>
