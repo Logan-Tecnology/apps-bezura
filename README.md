@@ -69,6 +69,7 @@ Arquivo principal: `infra/docker-compose.vps.yml`
 
 - Serviço Nginx para publicação do frontend.
 - Labels Traefik para roteamento por host (`apps.logzap.com.br` e `cadastro.bezura.com.br` apontam para o mesmo container).
+- URL pública do painel: **https://apps.logzap.com.br/** (raiz do site; `/modal/` continua válido para compatibilidade).
 - Montagem de `web/modal` e assets no container.
 
 ### 4) Deploy CI/CD
