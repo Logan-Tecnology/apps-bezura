@@ -54,7 +54,7 @@
     .view-container {
       width: 100%;
       min-height: 100vh;
-      padding: 40px;
+      padding: 32px 24px;
       display: none;
       position: relative;
     }
@@ -212,7 +212,7 @@
       display: flex;
       gap: 20px;
       width: 100%;
-      max-width: 1100px;
+      max-width: 1500px;
       margin: 0 auto 30px auto;
     }
 
@@ -234,10 +234,10 @@
 
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 30px;
+      grid-template-columns: minmax(420px, 0.95fr) minmax(760px, 1.5fr);
+      gap: 22px;
       width: 100%;
-      max-width: 1200px;
+      max-width: 1500px;
       margin: 0 auto;
     }
 
@@ -254,14 +254,16 @@
     .form-card-wide h3, .table-card h3 { margin-top: 0; margin-bottom: 24px; font-size: 1.2rem; }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .phone-datetime-row { grid-template-columns: 1.35fr 1fr; }
 
-    .phone-input { display: flex; gap: 8px; }
-    .ddi-select { width: 90px; cursor: pointer; }
+    .phone-input { display: flex; gap: 8px; align-items: center; }
+    .ddi-select { width: 96px; cursor: pointer; flex: 0 0 96px; }
+    #rem-dest { flex: 1; min-width: 210px; }
 
     .datetime-row { display: flex; gap: 8px; }
     .datetime-row input { flex: 1; }
 
-    .freq-options { margin-top: 12px; padding: 16px; background: rgba(0,0,0,0.15); border-radius: 12px; }
+    .freq-options { margin-top: 12px; padding: 16px; background: rgba(0,0,0,0.15); border-radius: 12px; display: none; }
 
     .days-selector { display: flex; gap: 6px; margin-top: 10px; }
     .day-btn {
@@ -291,18 +293,50 @@
     }
 
     /* TABLE STYLES */
+    .table-toolbar {
+      display: grid;
+      grid-template-columns: 1.2fr repeat(4, minmax(120px, 0.35fr));
+      gap: 10px;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+    .table-toolbar input, .table-toolbar select {
+      padding: 10px 12px;
+      font-size: 0.88rem;
+    }
     .table-wrapper { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th { text-align: left; padding: 12px; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--glass-border); }
     td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .td-main { display: flex; flex-direction: column; gap: 4px; }
+    .td-sub { font-size: 0.78rem; color: var(--text-muted); }
 
     .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 700;
     }
     .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-sent { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .status-paused { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .status-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+
+    .channel-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      margin-right: 6px;
+    }
+    .channel-oficial { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.35); }
+    .channel-nao-oficial { background: rgba(250, 204, 21, 0.12); color: #fde047; border: 1px solid rgba(250, 204, 21, 0.35); }
 
     .action-btn {
       background: transparent;
@@ -316,6 +350,9 @@
     }
     .action-btn:hover { background: rgba(255,255,255,0.1); }
 
+    @media (max-width: 1200px) {
+      .table-toolbar { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 1000px) {
       .dashboard-grid { grid-template-columns: 1fr; }
       .dashboard-header { flex-direction: column; }
@@ -391,7 +428,7 @@
       <!-- FORMULÁRIO: NOVO LEMBRETE -->
       <section class="form-card-wide">
         <h3>🚀 Novo Lembrete</h3>
-        <div class="form-row">
+        <div class="form-row phone-datetime-row">
           <div class="input-group">
             <label>Nome do Lembrete</label>
             <input type="text" id="rem-name" placeholder="Ex: Aviso de Cobrança">
@@ -463,7 +500,14 @@
           </div>
         </div>
 
-        <div class="input-group">
+        <div class="input-group" id="group-template" style="display:none;">
+          <label>Modelo de Mensagem (API Oficial)</label>
+          <select id="rem-template">
+            <option value="">Selecione um modelo...</option>
+          </select>
+        </div>
+
+        <div class="input-group" id="group-message">
           <label>Mensagem</label>
           <textarea id="rem-msg" placeholder="Digite sua mensagem aqui..." rows="4"></textarea>
         </div>
@@ -474,6 +518,32 @@
       <!-- TABELA: LEMBRETES ATIVOS -->
       <section class="table-card">
         <h3>📅 Meus Lembretes</h3>
+        <div class="table-toolbar">
+          <input id="filter-query" type="text" placeholder="Buscar por nome, destino ou mensagem...">
+          <select id="filter-status">
+            <option value="">Status (todos)</option>
+            <option value="ativo">Ativo</option>
+            <option value="pausado">Pausado</option>
+            <option value="enviado">Enviado</option>
+          </select>
+          <select id="filter-api">
+            <option value="">Origem (todas)</option>
+            <option value="oficial">Oficial</option>
+            <option value="nao_oficial">Não oficial</option>
+          </select>
+          <select id="filter-recorrencia">
+            <option value="">Recorrência (todas)</option>
+            <option value="once">Uma vez</option>
+            <option value="daily">Diária</option>
+            <option value="weekly">Semanal</option>
+            <option value="monthly">Mensal</option>
+          </select>
+          <select id="filter-periodo">
+            <option value="">Período (todos)</option>
+            <option value="today">Hoje</option>
+            <option value="week">7 dias</option>
+          </select>
+        </div>
         <div class="table-wrapper">
           <table id="table-reminders">
             <thead>
@@ -481,6 +551,7 @@
                 <th>Nome</th>
                 <th>Destino</th>
                 <th>Próximo Envio</th>
+                <th>Recorrência</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
@@ -488,7 +559,7 @@
             <tbody id="reminders-list">
               <!-- JS Injetará aqui -->
               <tr>
-                <td colspan="5" style="text-align:center; padding: 20px;">Nenhum lembrete agendado.</td>
+                <td colspan="6" style="text-align:center; padding: 20px;">Nenhum lembrete agendado.</td>
               </tr>
             </tbody>
           </table>
@@ -500,6 +571,13 @@
   <script>
     /* CONFIGURATION - Substitua pela URL do seu Webhook n8n */
     const N8N_WEBHOOK_URL = "https://n8n.bezura.cloud/webhook/FhzponMMzHWYWQVG";
+    let currentApiToken = "";
+    let editingReminderId = null;
+    let currentReminders = [];
+    let filteredReminders = [];
+    let originMetaByNumber = {};
+    let currentTemplates = [];
+    const currentReminderFilters = { query: "", status: "", api: "", recorrencia: "", periodo: "" };
 
     /* PARTICLES */
     function createParticles() {
@@ -523,19 +601,307 @@
       return token.substring(0, 9) + "**********";
     }
 
-    function toggleRecurrenceFields() {
-      const freq = document.getElementById('rem-freq').value;
-      document.getElementById('opt-weekly').style.display = freq === 'weekly' ? 'block' : 'none';
-      document.getElementById('opt-monthly').style.display = freq === 'monthly' ? 'block' : 'none';
+    function formatReminderDate(reminder) {
+      const source = reminder.proximo_envio || (reminder.data && reminder.hora ? `${reminder.data}T${reminder.hora}` : reminder.data);
+      if (!source) return "-";
+      const dt = new Date(source);
+      if (Number.isNaN(dt.getTime())) return "-";
+      return dt.toLocaleString();
     }
 
-    async function checkExistingToken(clientId) {
-      if (!clientId) return;
+    function getReminderDate(reminder) {
+      const source = reminder.proximo_envio || (reminder.data && reminder.hora ? `${reminder.data}T${reminder.hora}` : "");
+      const dt = new Date(source);
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    }
+
+    function formatRelativeDate(reminder) {
+      const dt = getReminderDate(reminder);
+      if (!dt) return "";
+      const diffMin = Math.round((dt.getTime() - Date.now()) / 60000);
+      if (Math.abs(diffMin) < 1) return "agora";
+      if (diffMin > 0) return `em ${diffMin} min`;
+      return `atrasado ${Math.abs(diffMin)} min`;
+    }
+
+    function normalizeRecurrenceLabel(reminder) {
+      const freq = String(reminder.recorrencia || "").toLowerCase().trim();
+      const hora = reminder.hora ? ` às ${reminder.hora}` : "";
+      if (freq === "daily") return `Diária${hora}`;
+      if (freq === "weekly") {
+        const names = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+        const days = String(reminder.dias_semana || "").split(",").map(v => Number(v.trim())).filter(n => Number.isInteger(n) && n >= 0 && n <= 6);
+        const summary = days.length ? days.map(d => names[d]).join("/") : "mesmo dia";
+        return `Semanal (${summary})${hora}`;
+      }
+      if (freq === "monthly") {
+        const interval = Number.parseInt(String(reminder.intervalo_mes || "1"), 10) || 1;
+        const day = Number.parseInt(String(reminder.dia_mes || ""), 10) || new Date().getDate();
+        return `Mensal (dia ${day}, a cada ${interval} mês${interval > 1 ? "es" : ""})${hora}`;
+      }
+      return `Uma vez${hora}`;
+    }
+
+    function getStatusBadgeClass(statusRaw) {
+      const status = String(statusRaw || "").toLowerCase().trim();
+      if (status === "ativo") return "status-active";
+      if (status === "enviado") return "status-sent";
+      if (status === "pausado") return "status-paused";
+      return "status-error";
+    }
+
+    function passesReminderFilters(reminder) {
+      const q = currentReminderFilters.query.trim().toLowerCase();
+      const status = String(reminder.status || "").toLowerCase().trim();
+      const rec = String(reminder.recorrencia || "once").toLowerCase().trim();
+      const api = String(reminder._apiType || "nao_oficial").toLowerCase();
+      const nextDate = getReminderDate(reminder);
+
+      if (q) {
+        const hay = `${reminder.nome || ""} ${reminder.destino || ""} ${stripReminderRid(reminder.mensagem || "")}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (currentReminderFilters.status && status !== currentReminderFilters.status) return false;
+      if (currentReminderFilters.api && api !== currentReminderFilters.api) return false;
+      if (currentReminderFilters.recorrencia && rec !== currentReminderFilters.recorrencia) return false;
+      if (currentReminderFilters.periodo && nextDate) {
+        const now = new Date();
+        if (currentReminderFilters.periodo === "today") {
+          const sameDay = now.toDateString() === nextDate.toDateString();
+          if (!sameDay) return false;
+        }
+        if (currentReminderFilters.periodo === "week") {
+          const limit = new Date(now);
+          limit.setDate(limit.getDate() + 7);
+          if (nextDate < now || nextDate > limit) return false;
+        }
+      }
+      return true;
+    }
+
+    function renderRemindersTable() {
+      const tbody = document.getElementById('reminders-list');
+      filteredReminders = currentReminders.filter(passesReminderFilters);
+
+      if (!filteredReminders.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum lembrete encontrado com os filtros atuais.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredReminders.map(r => {
+        const statusLabel = r.status || "Pausado";
+        const isActive = String(statusLabel).toLowerCase() === "ativo";
+        const channelLabel = r._apiType === "oficial" ? "Oficial" : "Não oficial";
+        const channelClass = r._apiType === "oficial" ? "channel-oficial" : "channel-nao-oficial";
+        const relative = formatRelativeDate(r);
+        return `
+          <tr>
+            <td>
+              <div class="td-main">
+                <span>${r.nome || "-"}</span>
+                <span class="td-sub">${stripReminderRid(r.mensagem || "").slice(0, 70) || "-"}</span>
+              </div>
+            </td>
+            <td>
+              <span class="channel-badge ${channelClass}">${channelLabel}</span>
+              +${r.ddi || ""}${r.destino || ""}
+            </td>
+            <td>
+              <div class="td-main">
+                <span>${formatReminderDate(r)}</span>
+                <span class="td-sub">${relative}</span>
+              </div>
+            </td>
+            <td>${normalizeRecurrenceLabel(r)}</td>
+            <td><span class="status-badge ${getStatusBadgeClass(statusLabel)}">${statusLabel}</span></td>
+            <td>
+              <button class="action-btn" data-action="edit" data-id="${r.id}" title="Editar">✏️</button>
+              <button class="action-btn" data-action="toggle" data-id="${r.id}" title="${isActive ? "Pausar" : "Ativar"}">${isActive ? "⏸️" : "▶️"}</button>
+              <button class="action-btn" data-action="delete" data-id="${r.id}" title="Excluir">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function normalizeDigits(value) {
+      return String(value || "").replace(/[^0-9]/g, "");
+    }
+
+    function encodeOriginForStorage(number, apiType) {
+      const normalized = String(number || "").trim();
+      const scope = apiType === "oficial" ? "oficial" : "nao_oficial";
+      return `${scope}::${normalized}`;
+    }
+
+    function decodeOriginFromStorage(originValue) {
+      const value = String(originValue || "");
+      if (value.startsWith("oficial::")) return { apiType: "oficial", number: value.slice("oficial::".length) };
+      if (value.startsWith("nao_oficial::")) return { apiType: "nao_oficial", number: value.slice("nao_oficial::".length) };
+      return { apiType: "nao_oficial", number: value };
+    }
+
+    function extractReminderRid(message) {
+      const raw = String(message || "");
+      const match = raw.match(/\|\|\|RID:([a-zA-Z0-9_-]+)$/);
+      return match ? match[1] : "";
+    }
+
+    function stripReminderRid(message) {
+      return String(message || "").replace(/\|\|\|RID:[a-zA-Z0-9_-]+$/, "");
+    }
+
+    function withReminderRid(message, rid) {
+      const clean = stripReminderRid(message);
+      if (!rid) return clean;
+      return `${clean}|||RID:${rid}`;
+    }
+
+    function resetReminderForm() {
+      editingReminderId = null;
+      document.getElementById('btn-save-rem').dataset.editCreatedAt = "";
+      document.getElementById('rem-name').value = "";
+      document.getElementById('rem-dest').value = "";
+      document.getElementById('rem-date').value = "";
+      document.getElementById('rem-time').value = "";
+      document.getElementById('rem-freq').value = "once";
+      document.getElementById('rem-msg').value = "";
+      document.getElementById('rem-month-interval').value = "1";
+      document.getElementById('rem-month-day').value = "";
+      document.getElementById('rem-template').value = "";
+      document.getElementById('group-template').style.display = "none";
+      currentTemplates = [];
+      document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+      toggleRecurrenceFields();
+      document.getElementById('btn-save-rem').innerHTML = "Agendar Lembrete";
+    }
+
+    function fillReminderForm(reminder) {
+      editingReminderId = reminder.id;
+      document.getElementById('btn-save-rem').dataset.editCreatedAt = reminder.createdAt || "";
+      const decodedOrigin = decodeOriginFromStorage(reminder.origem || "");
+      document.getElementById('rem-name').value = reminder.nome || "";
+      document.getElementById('rem-origin').value = decodedOrigin.number || "";
+      document.getElementById('rem-country').value = normalizeDigits(reminder.ddi || "55") || "55";
+      document.getElementById('rem-dest').value = normalizeDigits(reminder.destino || "");
+      document.getElementById('rem-date').value = reminder.data || "";
+      document.getElementById('rem-time').value = reminder.hora || "";
+      document.getElementById('rem-freq').value = reminder.recorrencia || "once";
+      document.getElementById('rem-msg').value = stripReminderRid(reminder.mensagem || "");
+      document.getElementById('rem-month-interval').value = reminder.intervalo_mes || "1";
+      document.getElementById('rem-month-day').value = reminder.dia_mes || "";
+      document.getElementById('rem-template').value = reminder.template_id || "";
+
+      const activeDays = String(reminder.dias_semana || "").split(",").map(v => v.trim()).filter(Boolean);
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        btn.classList.toggle('active', activeDays.includes(btn.dataset.day));
+      });
+
+      handleOriginChange(reminder.template_id || "");
+      toggleRecurrenceFields();
+      document.getElementById('btn-save-rem').innerHTML = "Salvar Alterações";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function getSelectedOriginMeta() {
+      const originValue = document.getElementById('rem-origin').value;
+      return originMetaByNumber[originValue] || { isOfficial: false, apiType: "nao_oficial", channelId: "", channelType: "" };
+    }
+
+    async function loadTemplates(clientId, channelId) {
+      const select = document.getElementById('rem-template');
+      try {
+        const params = new URLSearchParams({
+          action: "list_templates",
+          id_cliente: clientId
+        });
+        if (channelId) params.set("channel_id", channelId);
+
+        const res = await fetch(`${N8N_WEBHOOK_URL}?${params.toString()}`);
+        if (!res.ok) throw new Error("Falha ao carregar templates");
+        const payload = await res.json();
+        currentTemplates = Array.isArray(payload) ? payload : [];
+
+        if (!currentTemplates.length) {
+          select.innerHTML = '<option value="">Nenhum template aprovado</option>';
+          return;
+        }
+
+        select.innerHTML = `<option value="">Selecione um modelo...</option>` + currentTemplates
+          .map(t => `<option value="${t.id}">${t.name || "Sem nome"}</option>`)
+          .join('');
+      } catch (e) {
+        select.innerHTML = '<option value="">Erro ao carregar templates</option>';
+      }
+    }
+
+    async function handleOriginChange(preferredTemplateId = "") {
+      const group = document.getElementById('group-template');
+      const groupMessage = document.getElementById('group-message');
+      const templateSelect = document.getElementById('rem-template');
+      const msgInput = document.getElementById('rem-msg');
+      const clientId = document.getElementById('header-id').textContent;
+      const meta = getSelectedOriginMeta();
+
+      if (meta.isOfficial) {
+        group.style.display = "flex";
+        groupMessage.style.display = "none";
+        await loadTemplates(clientId, meta.channelId || "");
+        if (preferredTemplateId) {
+          templateSelect.value = preferredTemplateId;
+          onTemplateChange();
+        }
+      } else {
+        group.style.display = "none";
+        groupMessage.style.display = "flex";
+        templateSelect.innerHTML = '<option value="">Selecione um modelo...</option>';
+        templateSelect.value = "";
+      }
+
+      if (!editingReminderId) msgInput.value = "";
+    }
+
+    function onTemplateChange() {
+      const templateId = document.getElementById('rem-template').value;
+      if (!templateId) return;
+      const template = currentTemplates.find(t => t.id === templateId);
+      if (template) {
+        document.getElementById('rem-msg').value = template.text || "";
+      }
+    }
+
+    function toggleRecurrenceFields() {
+      const freq = document.getElementById('rem-freq').value;
+      const optionsBox = document.getElementById('freq-options');
+      const weekly = document.getElementById('opt-weekly');
+      const monthly = document.getElementById('opt-monthly');
+      const showExtras = freq === 'weekly' || freq === 'monthly';
+
+      optionsBox.style.display = showExtras ? 'block' : 'none';
+      weekly.style.display = freq === 'weekly' ? 'block' : 'none';
+      monthly.style.display = freq === 'monthly' ? 'block' : 'none';
+    }
+
+    function openDashboard(clientId, token) {
       const loginCard = document.getElementById('login-card');
       const dashContent = document.getElementById('dashboard-content');
       const dashHeader = document.getElementById('dashboard-header');
       const headerId = document.getElementById('header-id');
       const headerToken = document.getElementById('header-token');
+
+      loginCard.style.display = 'none';
+      dashContent.style.display = 'grid';
+      dashHeader.style.display = 'flex';
+      headerId.textContent = clientId;
+      headerToken.textContent = maskToken(token || "");
+      currentApiToken = token || "";
+
+      loadOriginNumbers(clientId);
+      loadReminders(clientId);
+    }
+
+    async function checkExistingToken(clientId) {
+      if (!clientId) return;
 
       try {
         const res = await fetch(`${N8N_WEBHOOK_URL}?id_cliente=${clientId}`);
@@ -543,18 +909,7 @@
           const data = await res.json();
           const savedToken = data.token || data.Token_API || (Array.isArray(data) && (data[0]?.token || data[0]?.Token_API));
           
-          if (savedToken) {
-            // MODO LOGADO
-            loginCard.style.display = 'none';
-            dashContent.style.display = 'grid';
-            dashHeader.style.display = 'flex';
-            headerId.textContent = clientId;
-            headerToken.textContent = maskToken(savedToken);
-            
-            // Carregar dados complementares
-            loadOriginNumbers(clientId);
-            loadReminders(clientId);
-          }
+          if (savedToken) openDashboard(clientId, savedToken);
         }
       } catch (e) {
         console.error("Erro ao consultar token:", e);
@@ -565,10 +920,37 @@
       const select = document.getElementById('rem-origin');
       try {
         const res = await fetch(`${N8N_WEBHOOK_URL}?action=list_numbers&id_cliente=${clientId}`);
-        if (res.ok) {
-          const numbers = await res.json();
-          select.innerHTML = numbers.map(n => `<option value="${n}">${n}</option>`).join('');
+        if (!res.ok) throw new Error("Erro ao carregar contas");
+        const payload = await res.json();
+        const numbers = Array.isArray(payload) ? payload : (Array.isArray(payload.numbers) ? payload.numbers : []);
+        if (numbers.length > 0) {
+          originMetaByNumber = {};
+          const normalized = numbers.map(n => (typeof n === "string" ? { number: n } : n));
+          normalized.forEach(n => {
+            const numberValue = n.number || n.numberRaw || "";
+            const channelType = String(n.channelType || "");
+            const isOfficial = Boolean(n.isOfficial) || ["CLOUDAPI_WHATSAPP", "DIALOG360_WHATSAPP"].includes(channelType.toUpperCase());
+            originMetaByNumber[numberValue] = {
+              number: numberValue,
+              channelId: n.channelId || "",
+              channelType,
+              isOfficial,
+              apiType: isOfficial ? "oficial" : "nao_oficial"
+            };
+          });
+          select.innerHTML = normalized
+            .map(n => {
+              const numberValue = n.number || n.numberRaw || "";
+              const meta = originMetaByNumber[numberValue] || { isOfficial: false };
+              const prefix = meta.isOfficial ? "🟢 Oficial" : "🟡 Não oficial";
+              return `<option value="${numberValue}">${prefix} · ${numberValue}</option>`;
+            })
+            .join('');
+          select.onchange = handleOriginChange;
+          await handleOriginChange();
+          return;
         }
+        select.innerHTML = '<option value="">Nenhuma conta encontrada</option>';
       } catch (e) {
         select.innerHTML = '<option value="">Erro ao carregar</option>';
       }
@@ -580,25 +962,25 @@
         const res = await fetch(`${N8N_WEBHOOK_URL}?action=list_reminders&id_cliente=${clientId}`);
         if (res.ok) {
           const reminders = await res.json();
-          if (reminders.length > 0) {
-            tbody.innerHTML = reminders.map(r => `
-              <tr>
-                <td>${r.nome}</td>
-                <td>+${r.ddi}${r.destino}</td>
-                <td>${new Date(r.proximo_envio).toLocaleString()}</td>
-                <td><span class="status-badge status-active">${r.status}</span></td>
-                <td>
-                  <button class="action-btn" title="Editar">✏️</button>
-                  <button class="action-btn" title="Pausar">⏸️</button>
-                  <button class="action-btn" title="Excluir">🗑️</button>
-                </td>
-              </tr>
-            `).join('');
-          }
+          const normalized = (Array.isArray(reminders) ? reminders : []).filter(r => String(r.status || "").toLowerCase() !== "excluido");
+          currentReminders = normalized.map(r => {
+            const decoded = decodeOriginFromStorage(r.origem || "");
+            return { ...r, _originNumber: decoded.number, _apiType: decoded.apiType };
+          });
+          renderRemindersTable();
         }
       } catch (e) {
         console.error("Erro ao carregar lembretes:", e);
       }
+    }
+
+    async function saveReminderAction(payload) {
+      const res = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("Falha ao salvar ação do lembrete");
     }
 
     async function saveToken(clientId, token) {
@@ -625,7 +1007,8 @@
         if (res.ok) {
           status.textContent = "✅ Configurado com sucesso!";
           status.style.color = "#10b981";
-          setTimeout(() => checkExistingToken(clientId), 1000);
+          openDashboard(clientId, token);
+          setTimeout(() => checkExistingToken(clientId), 800);
         } else {
           throw new Error("Erro no servidor");
         }
@@ -641,18 +1024,33 @@
     async function scheduleReminder() {
       const btn = document.getElementById('btn-save-rem');
       const clientId = document.getElementById('header-id').textContent;
+      const selectedMeta = getSelectedOriginMeta();
+      const selectedTemplateId = document.getElementById('rem-template').value || "";
+      const selectedTemplate = currentTemplates.find(t => t.id === selectedTemplateId);
+      const editingReminder = currentReminders.find(r => Number(r.id) === Number(editingReminderId));
+      const existingRid = extractReminderRid(editingReminder?.mensagem || "");
+      const generatedRid = existingRid || `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      const baseMessage = selectedMeta.isOfficial ? (selectedTemplate?.text || "") : document.getElementById('rem-msg').value;
+      const finalMessage = withReminderRid(baseMessage, generatedRid);
+
+      if (selectedMeta.isOfficial && !selectedTemplateId) {
+        alert("⚠️ Selecione um modelo de mensagem para API oficial.");
+        return;
+      }
       
       const data = {
-        action: 'create_reminder',
+        action: editingReminderId ? 'update_reminder' : 'create_reminder',
+        id: editingReminderId ? Number(editingReminderId) : undefined,
+        createdAt: editingReminderId ? (document.getElementById('btn-save-rem').dataset.editCreatedAt || "") : undefined,
         id_cliente: clientId,
         nome: document.getElementById('rem-name').value,
-        origem: document.getElementById('rem-origin').value,
+        origem: encodeOriginForStorage(document.getElementById('rem-origin').value, selectedMeta.apiType),
         ddi: document.getElementById('rem-country').value,
         destino: document.getElementById('rem-dest').value,
         data: document.getElementById('rem-date').value,
         hora: document.getElementById('rem-time').value,
         recorrencia: document.getElementById('rem-freq').value,
-        mensagem: document.getElementById('rem-msg').value,
+        mensagem: finalMessage,
         dias_semana: Array.from(document.querySelectorAll('.day-btn.active')).map(b => b.dataset.day),
         intervalo_mes: document.getElementById('rem-month-interval').value,
         dia_mes: document.getElementById('rem-month-day').value
@@ -668,15 +1066,85 @@
           body: JSON.stringify(data)
         });
         if (res.ok) {
-          alert("✅ Lembrete agendado com sucesso!");
+          alert(editingReminderId ? "✅ Lembrete atualizado com sucesso!" : "✅ Lembrete agendado com sucesso!");
+          resetReminderForm();
           loadReminders(clientId);
-          btn.innerHTML = "Agendar Lembrete";
           btn.disabled = false;
         }
       } catch (e) {
-        alert("❌ Erro ao agendar.");
-        btn.innerHTML = "Agendar Lembrete";
+        alert(editingReminderId ? "❌ Erro ao atualizar." : "❌ Erro ao agendar.");
         btn.disabled = false;
+      } finally {
+        if (!editingReminderId) btn.innerHTML = "Agendar Lembrete";
+      }
+    }
+
+    async function onReminderActionsClick(event) {
+      const target = event.target.closest("button[data-action]");
+      if (!target) return;
+
+      const action = target.dataset.action;
+      const reminderId = Number(target.dataset.id);
+      const clientId = document.getElementById('header-id').textContent;
+      const reminder = currentReminders.find(r => Number(r.id) === reminderId);
+      if (!reminder) return;
+
+      try {
+        if (action === "edit") {
+          fillReminderForm(reminder);
+          return;
+        }
+
+        if (action === "toggle") {
+          const isActive = String(reminder.status || "").toLowerCase() === "ativo";
+          await saveReminderAction({
+            action: "update_reminder",
+            id: reminderId,
+            createdAt: reminder.createdAt || "",
+            id_cliente: reminder.id_cliente || clientId,
+            nome: reminder.nome || "",
+            origem: reminder.origem || "",
+            ddi: reminder.ddi || "",
+            destino: reminder.destino || "",
+            data: reminder.data || "",
+            hora: reminder.hora || "",
+            recorrencia: reminder.recorrencia || "once",
+            mensagem: reminder.mensagem || "",
+            dias_semana: String(reminder.dias_semana || "").split(",").map(v => v.trim()).filter(Boolean),
+            intervalo_mes: reminder.intervalo_mes || "",
+            dia_mes: reminder.dia_mes || "",
+            status: isActive ? "Pausado" : "Ativo"
+          });
+          await loadReminders(clientId);
+          return;
+        }
+
+        if (action === "delete") {
+          const ok = window.confirm("Deseja realmente excluir este lembrete?");
+          if (!ok) return;
+          await saveReminderAction({
+            action: "update_reminder",
+            id: reminderId,
+            createdAt: reminder.createdAt || "",
+            id_cliente: reminder.id_cliente || clientId,
+            nome: reminder.nome || "",
+            origem: reminder.origem || "",
+            ddi: reminder.ddi || "",
+            destino: reminder.destino || "",
+            data: reminder.data || "",
+            hora: reminder.hora || "",
+            recorrencia: reminder.recorrencia || "once",
+            mensagem: reminder.mensagem || "",
+            dias_semana: String(reminder.dias_semana || "").split(",").map(v => v.trim()).filter(Boolean),
+            intervalo_mes: reminder.intervalo_mes || "",
+            dia_mes: reminder.dia_mes || "",
+            status: "Excluido"
+          });
+          if (editingReminderId === reminderId) resetReminderForm();
+          await loadReminders(clientId);
+        }
+      } catch (err) {
+        alert("❌ Não foi possível concluir a ação.");
       }
     }
 
@@ -712,6 +1180,8 @@
         checkExistingToken(clientId);
         btn.onclick = () => saveToken(clientId, tokenInput.value);
         document.getElementById('btn-save-rem').onclick = scheduleReminder;
+        document.getElementById('rem-template').onchange = onTemplateChange;
+        document.getElementById('reminders-list').onclick = onReminderActionsClick;
       } else {
         const clientId = segments[0] || '';
         viewLib.classList.add('view-active');
@@ -726,6 +1196,27 @@
     /* EVENTS */
     document.querySelectorAll('.day-btn').forEach(btn => {
       btn.onclick = () => btn.classList.toggle('active');
+    });
+
+    ['filter-query', 'filter-status', 'filter-api', 'filter-recorrencia', 'filter-periodo'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        currentReminderFilters.query = document.getElementById('filter-query').value || "";
+        currentReminderFilters.status = document.getElementById('filter-status').value || "";
+        currentReminderFilters.api = document.getElementById('filter-api').value || "";
+        currentReminderFilters.recorrencia = document.getElementById('filter-recorrencia').value || "";
+        currentReminderFilters.periodo = document.getElementById('filter-periodo').value || "";
+        renderRemindersTable();
+      });
+      el.addEventListener('change', () => {
+        currentReminderFilters.query = document.getElementById('filter-query').value || "";
+        currentReminderFilters.status = document.getElementById('filter-status').value || "";
+        currentReminderFilters.api = document.getElementById('filter-api').value || "";
+        currentReminderFilters.recorrencia = document.getElementById('filter-recorrencia').value || "";
+        currentReminderFilters.periodo = document.getElementById('filter-periodo').value || "";
+        renderRemindersTable();
+      });
     });
 
     document.getElementById('btn-back').onclick = () => {

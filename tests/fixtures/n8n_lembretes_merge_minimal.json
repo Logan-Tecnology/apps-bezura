@@ -1,0 +1,38 @@
+{
+  "name": "fixture",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByFields"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [0, 0],
+      "id": "merge1",
+      "name": "Merge_Envio_Com_Token"
+    }
+  ],
+  "connections": {
+    "Filtrar_Envio_Agora": {
+      "main": [
+        [
+          { "node": "Rotear_API_Envio", "type": "main", "index": 0 },
+          { "node": "Buscar_Token_Envio", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Rotear_API_Envio": {
+      "main": [
+        [{ "node": "Merge_Envio_Com_Token", "type": "main", "index": 0 }],
+        [{ "node": "Envio_Lembrete_NaoOficial", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar_Token_Envio": {
+      "main": [
+        [{ "node": "Merge_Envio_Com_Token", "type": "main", "index": 1 }]
+      ]
+    }
+  },
+  "settings": {}
+}
