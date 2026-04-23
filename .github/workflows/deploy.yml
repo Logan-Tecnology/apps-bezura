@@ -18,7 +18,13 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
+          script_stop: true
           script: |
+            set -euo pipefail
             cd /home/vinicius/avisos-bezura
-            git pull origin main
+            git stash push -u -m "auto-deploy-stash-$(date +%Y%m%d-%H%M%S)" || true
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            git rev-parse --short HEAD
             docker compose -f infra/docker-compose.vps.yml up -d --build
