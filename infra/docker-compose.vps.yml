@@ -10,7 +10,8 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=n8n_default
-      - traefik.http.routers.cadastro-site.rule=Host(`apps.logzap.com.br`)
+      # cadastro.bezura.com.br é o host do embed/README; sem regra Traefik dedicada → 404 no edge.
+      - traefik.http.routers.cadastro-site.rule=Host(`apps.logzap.com.br`) || Host(`cadastro.bezura.com.br`)
       - traefik.http.routers.cadastro-site.entrypoints=web,websecure
       - traefik.http.routers.cadastro-site.tls=true
       - traefik.http.routers.cadastro-site.tls.certresolver=mytlschallenge
