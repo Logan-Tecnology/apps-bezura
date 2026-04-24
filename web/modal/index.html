@@ -62,21 +62,38 @@
 
     .view-active { display: flex; flex-direction: column; align-items: flex-start; }
 
-    /* HEADER */
-    .top-header {
-      position: absolute;
-      top: 40px;
-      right: 40px;
-      text-align: right;
+    /* LOJA DE APPS */
+    .store-header {
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto 18px auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
     }
-
-    .top-header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
+    .store-title h1 {
       margin: 0;
-      background: linear-gradient(to right, #fff, #94a3b8);
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      background: linear-gradient(to right, #ffffff, #dbeafe);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+    .store-title p {
+      margin: 6px 0 0;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+    }
+    .store-search {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      color: #fff;
+      padding: 12px 14px;
     }
 
     /* BACK ARROW */
@@ -98,33 +115,44 @@
 
     .back-arrow svg { width: 40px; height: 40px; color: white; }
 
-    /* APP GRID (Library) */
+    /* APP GRID (Store) */
     .app-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 30px;
-      margin-top: 60px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
       width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
     }
 
     .app-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
       text-decoration: none;
       color: inherit;
-      transition: transform 0.3s ease;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 220px;
+    }
+    .app-item:hover {
+      transform: translateY(-3px) scale(1.01);
+      border-color: rgba(125, 211, 252, 0.65);
+      box-shadow: 0 12px 30px rgba(17, 24, 39, 0.28);
     }
 
-    .app-item:hover { transform: translateY(-5px); }
-
     .app-icon-pure {
-      width: 140px;
-      height: 140px;
+      width: 72px;
+      height: 72px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     .app-icon-pure img {
@@ -134,7 +162,29 @@
       filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
     }
 
-    .app-name { font-weight: 600; font-size: 0.9rem; }
+    .app-name { font-weight: 700; font-size: 1rem; }
+    .app-description { color: #dbeafe; font-size: 0.84rem; line-height: 1.35; min-height: 36px; }
+    .app-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .app-badge {
+      font-size: 0.74rem;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 4px 8px;
+      border: 1px solid transparent;
+    }
+    .app-badge-category { color: #bfdbfe; background: rgba(59, 130, 246, 0.18); border-color: rgba(147, 197, 253, 0.35); }
+    .app-badge-status { color: #86efac; background: rgba(16, 185, 129, 0.16); border-color: rgba(110, 231, 183, 0.35); }
+    .app-open {
+      margin-top: auto;
+      align-self: flex-start;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      cursor: pointer;
+    }
 
     /* FORM (Reminders) */
     .form-card {
@@ -392,6 +442,8 @@
     @media (max-width: 1000px) {
       .dashboard-grid { grid-template-columns: 1fr; }
       .dashboard-header { flex-direction: column; }
+      .store-header { flex-direction: column; }
+      .store-search { max-width: 100%; }
     }
   </style>
 </head>
@@ -400,16 +452,26 @@
 
   <!-- VIEW: BIBLIOTECA -->
   <main id="view-library" class="view-container">
-    <header class="top-header">
-      <h1>Biblioteca de aplicativos</h1>
+    <header class="store-header">
+      <div class="store-title">
+        <h1>Loja Bezura</h1>
+        <p>Escolha um aplicativo para abrir e gerenciar seus fluxos.</p>
+      </div>
+      <input id="store-search" class="store-search" type="text" placeholder="Buscar aplicativo...">
     </header>
 
     <div class="app-grid">
-      <a href="#" id="link-reminders" class="app-item">
+      <a href="#" id="link-reminders" class="app-item" data-app-name="Lembretes">
         <div class="app-icon-pure">
           <img src="/avisos-recorrente.png" alt="Lembretes">
         </div>
         <span class="app-name">Lembretes</span>
+        <span class="app-description">Automatize lembretes recorrentes e acompanhe os envios em tempo real.</span>
+        <div class="app-meta">
+          <span class="app-badge app-badge-category">Automação</span>
+          <span class="app-badge app-badge-status">Ativo</span>
+        </div>
+        <span class="app-open">Abrir</span>
       </a>
     </div>
   </main>
@@ -1348,6 +1410,18 @@
           window.history.pushState({}, '', `/lembretes/${clientId}`);
           resolveRoute();
         };
+        const storeSearch = document.getElementById('store-search');
+        if (storeSearch) {
+          storeSearch.value = '';
+          storeSearch.oninput = () => {
+            const q = storeSearch.value.trim().toLowerCase();
+            document.querySelectorAll('.app-item').forEach((card) => {
+              const name = String(card.dataset.appName || '').toLowerCase();
+              const desc = String(card.querySelector('.app-description')?.textContent || '').toLowerCase();
+              card.style.display = (!q || name.includes(q) || desc.includes(q)) ? 'flex' : 'none';
+            });
+          };
+        }
       }
     }
 
