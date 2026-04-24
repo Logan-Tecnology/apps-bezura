@@ -6,6 +6,7 @@ services:
     volumes:
       - ../infra/nginx/cadastro-site.conf:/etc/nginx/conf.d/default.conf:ro
       - ../web/avisos-recorrente.png:/usr/share/nginx/html/avisos-recorrente.png:ro
+      - ../web/banner:/usr/share/nginx/html/banner:ro
       - ../web/modal:/usr/share/nginx/html/modal:ro
     labels:
       - traefik.enable=true

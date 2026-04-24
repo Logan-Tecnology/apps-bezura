@@ -124,6 +124,33 @@
       background: linear-gradient(135deg, rgba(30, 64, 175, 0.2), rgba(56, 189, 248, 0.14));
     }
     .store-banner-empty.active { display: flex; }
+    .store-banner-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .store-banner-dots.visible { display: flex; }
+    .store-banner-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .store-banner-dot:hover { transform: scale(1.15); background: rgba(255, 255, 255, 0.45); }
+    .store-banner-dot.active { background: #ffffff; transform: scale(1.2); }
 
     /* BACK ARROW */
     .back-arrow {
@@ -203,17 +230,6 @@
     }
     .app-badge-category { color: #bfdbfe; background: rgba(59, 130, 246, 0.18); border-color: rgba(147, 197, 253, 0.35); }
     .app-badge-status { color: #86efac; background: rgba(16, 185, 129, 0.16); border-color: rgba(110, 231, 183, 0.35); }
-    .app-open {
-      margin-top: auto;
-      align-self: flex-start;
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      cursor: pointer;
-    }
 
     /* FORM (Reminders) */
     .form-card {
@@ -526,6 +542,7 @@
     </header>
     <section class="store-banner">
       <img id="store-banner-image" src="" alt="Banner Bezura" style="display:none;">
+      <div id="store-banner-dots" class="store-banner-dots" aria-hidden="true"></div>
       <div id="store-banner-empty" class="store-banner-empty">Adicione imagens em <code>/web/banner</code> para exibir o carrossel.</div>
     </section>
 
@@ -540,7 +557,6 @@
           <span class="app-badge app-badge-category">Automação</span>
           <span class="app-badge app-badge-status">Ativo</span>
         </div>
-        <span class="app-open">Abrir</span>
       </a>
     </div>
   </main>
@@ -767,7 +783,10 @@
     let originMetaByNumber = {};
     let currentTemplates = [];
     const currentReminderFilters = { query: "", status: "", api: "", recorrencia: "", periodo: "" };
+    const STORE_BANNER_ROTATION_MS = 3000;
     const STORE_BANNER_CANDIDATES = [
+      "/banner/1.png",
+      "/banner/2.png",
       "/banner/banner-1.jpg",
       "/banner/banner-1.png",
       "/banner/banner-2.jpg",
@@ -780,6 +799,7 @@
     let storeBannerImages = [];
     let storeBannerIndex = 0;
     let storeBannerTimer = null;
+    let storeBannerDotsBound = false;
 
     /* PARTICLES */
     function createParticles() {
@@ -1175,6 +1195,36 @@
       if (target) target.classList.add("active");
     }
 
+    function renderStoreBannerDots() {
+      const wrap = document.getElementById('store-banner-dots');
+      if (!wrap) return;
+      if (storeBannerImages.length < 2) {
+        wrap.classList.remove('visible');
+        wrap.innerHTML = '';
+        return;
+      }
+      wrap.classList.add('visible');
+      wrap.innerHTML = storeBannerImages.map((_, i) =>
+        `<button type="button" class="store-banner-dot${i === storeBannerIndex ? " active" : ""}" data-banner-index="${i}" aria-label="Slide ${i + 1}"></button>`
+      ).join('');
+    }
+
+    function bindStoreBannerDotsOnce() {
+      if (storeBannerDotsBound) return;
+      const wrap = document.getElementById('store-banner-dots');
+      if (!wrap) return;
+      storeBannerDotsBound = true;
+      wrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('.store-banner-dot');
+        if (!btn || !wrap.contains(btn)) return;
+        const idx = Number.parseInt(btn.getAttribute('data-banner-index') || '', 10);
+        if (!Number.isFinite(idx) || idx < 0 || idx >= storeBannerImages.length) return;
+        storeBannerIndex = idx;
+        setStoreBannerState();
+        startStoreBannerRotation();
+      });
+    }
+
     function setStoreBannerState() {
       const bannerImg = document.getElementById('store-banner-image');
       const bannerEmpty = document.getElementById('store-banner-empty');
@@ -1183,6 +1233,7 @@
       if (!storeBannerImages.length) {
         bannerImg.style.display = 'none';
         bannerEmpty.classList.add('active');
+        renderStoreBannerDots();
         return;
       }
 
@@ -1193,6 +1244,7 @@
       requestAnimationFrame(() => {
         bannerImg.style.opacity = '1';
       });
+      renderStoreBannerDots();
     }
 
     function startStoreBannerRotation() {
@@ -1201,10 +1253,11 @@
       storeBannerTimer = setInterval(() => {
         storeBannerIndex = (storeBannerIndex + 1) % storeBannerImages.length;
         setStoreBannerState();
-      }, 3000);
+      }, STORE_BANNER_ROTATION_MS);
     }
 
     function initStoreBanner() {
+      bindStoreBannerDotsOnce();
       if (storeBannerImages.length) {
         setStoreBannerState();
         startStoreBannerRotation();
