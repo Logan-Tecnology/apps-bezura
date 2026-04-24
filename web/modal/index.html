@@ -95,6 +95,35 @@
       color: #fff;
       padding: 12px 14px;
     }
+    .store-banner {
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto 18px auto;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(15, 23, 42, 0.22);
+      min-height: 190px;
+      position: relative;
+    }
+    .store-banner img {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.4s ease;
+      opacity: 1;
+    }
+    .store-banner-empty {
+      display: none;
+      min-height: 190px;
+      align-items: center;
+      justify-content: center;
+      color: #dbeafe;
+      font-size: 0.9rem;
+      background: linear-gradient(135deg, rgba(30, 64, 175, 0.2), rgba(56, 189, 248, 0.14));
+    }
+    .store-banner-empty.active { display: flex; }
 
     /* BACK ARROW */
     .back-arrow {
@@ -267,7 +296,7 @@
     .btn-save {
       background: var(--primary);
       color: white;
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.9);
       border-radius: 14px;
       padding: 14px 24px;
       font-weight: 700;
@@ -477,6 +506,9 @@
       .dashboard-header { flex-direction: column; }
       .store-header { flex-direction: column; }
       .store-search { max-width: 100%; }
+      .store-banner img { height: 150px; }
+      .store-banner,
+      .store-banner-empty { min-height: 150px; }
     }
   </style>
 </head>
@@ -492,6 +524,10 @@
       </div>
       <input id="store-search" class="store-search" type="text" placeholder="Buscar aplicativo...">
     </header>
+    <section class="store-banner">
+      <img id="store-banner-image" src="" alt="Banner Bezura" style="display:none;">
+      <div id="store-banner-empty" class="store-banner-empty">Adicione imagens em <code>/web/banner</code> para exibir o carrossel.</div>
+    </section>
 
     <div class="app-grid">
       <a href="#" id="link-reminders" class="app-item" data-app-name="Lembretes">
@@ -731,6 +767,19 @@
     let originMetaByNumber = {};
     let currentTemplates = [];
     const currentReminderFilters = { query: "", status: "", api: "", recorrencia: "", periodo: "" };
+    const STORE_BANNER_CANDIDATES = [
+      "/banner/banner-1.jpg",
+      "/banner/banner-1.png",
+      "/banner/banner-2.jpg",
+      "/banner/banner-2.png",
+      "/banner/banner-3.jpg",
+      "/banner/banner-3.png",
+      "/banner/banner-4.jpg",
+      "/banner/banner-4.png"
+    ];
+    let storeBannerImages = [];
+    let storeBannerIndex = 0;
+    let storeBannerTimer = null;
 
     /* PARTICLES */
     function createParticles() {
@@ -1126,6 +1175,57 @@
       if (target) target.classList.add("active");
     }
 
+    function setStoreBannerState() {
+      const bannerImg = document.getElementById('store-banner-image');
+      const bannerEmpty = document.getElementById('store-banner-empty');
+      if (!bannerImg || !bannerEmpty) return;
+
+      if (!storeBannerImages.length) {
+        bannerImg.style.display = 'none';
+        bannerEmpty.classList.add('active');
+        return;
+      }
+
+      bannerEmpty.classList.remove('active');
+      bannerImg.style.display = 'block';
+      bannerImg.style.opacity = '0';
+      bannerImg.src = storeBannerImages[storeBannerIndex];
+      requestAnimationFrame(() => {
+        bannerImg.style.opacity = '1';
+      });
+    }
+
+    function startStoreBannerRotation() {
+      if (storeBannerTimer) clearInterval(storeBannerTimer);
+      if (storeBannerImages.length <= 1) return;
+      storeBannerTimer = setInterval(() => {
+        storeBannerIndex = (storeBannerIndex + 1) % storeBannerImages.length;
+        setStoreBannerState();
+      }, 3000);
+    }
+
+    function initStoreBanner() {
+      if (storeBannerImages.length) {
+        setStoreBannerState();
+        startStoreBannerRotation();
+        return;
+      }
+
+      Promise.all(
+        STORE_BANNER_CANDIDATES.map((src) => new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(src);
+          img.onerror = () => resolve(null);
+          img.src = src;
+        }))
+      ).then((results) => {
+        storeBannerImages = results.filter(Boolean);
+        storeBannerIndex = 0;
+        setStoreBannerState();
+        startStoreBannerRotation();
+      });
+    }
+
     function openDashboard(clientId, token) {
       const loginCard = document.getElementById('login-card');
       const dashContent = document.getElementById('dashboard-content');
@@ -1460,6 +1560,7 @@
       } else {
         const clientId = segments[0] || '';
         viewLib.classList.add('view-active');
+        initStoreBanner();
         document.getElementById('link-reminders').onclick = (e) => {
           e.preventDefault();
           window.history.pushState({}, '', `/lembretes/${clientId}`);
