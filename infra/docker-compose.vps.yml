@@ -1,7 +1,7 @@
 services:
-  cadastro-site:
+  apps-bezura:
     image: nginx:alpine
-    container_name: cadastro-site
+    container_name: apps-bezura
     restart: unless-stopped
     volumes:
       - ../infra/nginx/cadastro-site.conf:/etc/nginx/conf.d/default.conf:ro
@@ -10,12 +10,12 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=n8n_default
-      - traefik.http.routers.cadastro-site.rule=Host(`apps.logzap.com.br`)
-      - traefik.http.routers.cadastro-site.entrypoints=web,websecure
-      - traefik.http.routers.cadastro-site.tls=true
-      - traefik.http.routers.cadastro-site.tls.certresolver=mytlschallenge
-      - traefik.http.routers.cadastro-site.priority=10
-      - traefik.http.services.cadastro-site.loadbalancer.server.port=80
+      - traefik.http.routers.apps-bezura.rule=Host(`apps.logzap.com.br`)
+      - traefik.http.routers.apps-bezura.entrypoints=web,websecure
+      - traefik.http.routers.apps-bezura.tls=true
+      - traefik.http.routers.apps-bezura.tls.certresolver=mytlschallenge
+      - traefik.http.routers.apps-bezura.priority=10
+      - traefik.http.services.apps-bezura.loadbalancer.server.port=80
     networks:
       - n8n_default
 
