@@ -252,13 +252,28 @@
     }
 
     .form-card-wide h3, .table-card h3 { margin-top: 0; margin-bottom: 24px; font-size: 1.2rem; }
+    .form-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .form-title-row h3 { margin: 0; }
+    .form-title-row .btn-save { width: auto; min-width: 190px; }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .phone-datetime-row { grid-template-columns: 1.35fr 1fr; }
+    .phone-datetime-row { grid-template-columns: 1fr 1.35fr; }
+    .form-row-single { grid-template-columns: 1fr; }
 
     .phone-input { display: flex; gap: 8px; align-items: center; }
     .ddi-select { width: 96px; cursor: pointer; flex: 0 0 96px; }
     #rem-dest { flex: 1; min-width: 210px; }
+    #rem-origin {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .datetime-row {
       display: grid;
@@ -436,7 +451,10 @@
       
       <!-- FORMULÁRIO: NOVO LEMBRETE -->
       <section class="form-card-wide">
-        <h3>🚀 Novo Lembrete</h3>
+        <div class="form-title-row">
+          <h3>🚀 Novo Lembrete</h3>
+          <button id="btn-save-rem" class="btn-save">Agendar Lembrete</button>
+        </div>
         <div class="form-row phone-datetime-row">
           <div class="input-group">
             <label>Nome do Lembrete</label>
@@ -450,7 +468,7 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row form-row-single">
           <div class="input-group">
             <label>Destino (WhatsApp)</label>
             <div class="phone-input">
@@ -467,7 +485,7 @@
         <div class="input-group">
           <label>Recorrência</label>
           <select id="rem-freq" onchange="toggleRecurrenceFields()">
-            <option value="once">Uma vez</option>
+            <option value="" selected>Selecione a recorrência...</option>
             <option value="daily">Diária (Todo dia)</option>
             <option value="weekly">Semanal (Escolher dia)</option>
             <option value="monthly">Mensal (Intervalo)</option>
@@ -541,7 +559,6 @@
           <textarea id="rem-msg" placeholder="Digite sua mensagem aqui..." rows="4"></textarea>
         </div>
 
-        <button id="btn-save-rem" class="btn-save">Agendar Lembrete</button>
       </section>
 
       <!-- TABELA: LEMBRETES ATIVOS -->
@@ -562,7 +579,6 @@
           </select>
           <select id="filter-recorrencia">
             <option value="">Recorrência (todas)</option>
-            <option value="once">Uma vez</option>
             <option value="daily">Diária</option>
             <option value="weekly">Semanal</option>
             <option value="monthly">Mensal</option>
@@ -868,7 +884,7 @@
       document.getElementById('rem-time-daily').value = "";
       document.getElementById('rem-time-weekly').value = "";
       document.getElementById('rem-time-monthly').value = "";
-      document.getElementById('rem-freq').value = "once";
+      document.getElementById('rem-freq').value = "";
       document.getElementById('rem-msg').value = "";
       document.getElementById('rem-month-interval').value = "1";
       document.getElementById('rem-month-day').value = "";
@@ -888,7 +904,8 @@
       document.getElementById('rem-origin').value = decodedOrigin.number || "";
       document.getElementById('rem-country').value = normalizeDigits(reminder.ddi || "55") || "55";
       document.getElementById('rem-dest').value = normalizeDigits(reminder.destino || "");
-      document.getElementById('rem-freq').value = reminder.recorrencia || "once";
+      const recurrence = String(reminder.recorrencia || "").toLowerCase();
+      document.getElementById('rem-freq').value = recurrence === "once" ? "" : recurrence;
       document.getElementById('rem-date-once').value = reminder.data || "";
       document.getElementById('rem-time-once').value = reminder.hora || "";
       document.getElementById('rem-time-daily').value = reminder.hora || "";
@@ -1044,8 +1061,9 @@
             .map(n => {
               const numberValue = n.number || n.numberRaw || "";
               const meta = originMetaByNumber[numberValue] || { isOfficial: false };
-              const prefix = meta.isOfficial ? "🟢 Oficial" : "🟡 Não oficial";
-              return `<option value="${numberValue}">${prefix} · ${numberValue}</option>`;
+              const prefix = meta.isOfficial ? "🟢 Oficial" : "🟡 N/oficial";
+              const compactNumber = numberValue.length > 18 ? `${numberValue.slice(0, 18)}...` : numberValue;
+              return `<option value="${numberValue}" title="${prefix} · ${numberValue}">${prefix} · ${compactNumber}</option>`;
             })
             .join('');
           select.onchange = handleOriginChange;
@@ -1144,6 +1162,11 @@
       const reminderName = document.getElementById('rem-name').value.trim();
       if (!reminderName) {
         alert("⚠️ Informe o nome do lembrete.");
+        return;
+      }
+
+      if (!freq) {
+        alert("⚠️ Selecione a recorrência antes de agendar.");
         return;
       }
       const duplicate = currentReminders.find((r) =>
