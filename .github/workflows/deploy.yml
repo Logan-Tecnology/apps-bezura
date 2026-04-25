@@ -84,15 +84,35 @@ jobs:
       - name: Validar produção (painel + assets)
         env:
           PUBLIC_ORIGIN: https://apps.logzap.com.br
+          EXPECTED_SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           set -euo pipefail
-          dns_ip=$(getent ahosts apps.logzap.com.br | awk '/STREAM/{print $1; exit}')
+          dns_ip=$(getent ahosts apps.logzap.com.br | awk '/STREAM/ && $1 ~ /^[0-9]+\./{print $1; exit}')
+          expected_ip=$(printf '%s' "${EXPECTED_SSH_HOST:-}" | awk -F',' '{print $1}' | tr -d '[:space:]')
           echo "DNS apps.logzap.com.br → ${dns_ip:-desconhecido}"
-          echo "SSH_HOST nos secrets deve ser esse IP — senão o CI atualiza outra máquina e o site público não muda."
-          curl -sfS -o /dev/null --max-time 25 "$PUBLIC_ORIGIN/modal/"
-          curl -sfS -o /dev/null --max-time 25 "$PUBLIC_ORIGIN/avisos-recorrente.png"
-          root=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 25 "$PUBLIC_ORIGIN/")
-          echo "GET / → HTTP $root (com nginx atual do repo deve ser 200 — sem redirect)"
-          if [ "$root" != "200" ]; then
-            echo "::warning::Raiz não retorna 200 — veja README (alinhamento DNS × SSH_HOST) ou aplique manualmente infra/nginx/cadastro-site.conf no servidor do DNS."
+          echo "SSH_HOST (secret) → ${expected_ip:-desconhecido}"
+          if [ -z "${dns_ip:-}" ] || [ -z "${expected_ip:-}" ]; then
+            echo "::error::Não foi possível determinar DNS/IP esperado para validação."
+            exit 1
+          fi
+          if [ "$dns_ip" != "$expected_ip" ]; then
+            echo "::error::Mismatch DNS x SSH_HOST. O deploy pode ter atualizado outra máquina."
+            echo "::error::Ajuste o secret SSH_HOST para $dns_ip e reexecute o workflow."
+            exit 1
+          fi
+
+          modal_code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 25 "$PUBLIC_ORIGIN/modal/")
+          asset_code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 25 "$PUBLIC_ORIGIN/avisos-recorrente.png")
+          root_code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 25 "$PUBLIC_ORIGIN/")
+
+          echo "GET /modal/ → HTTP $modal_code"
+          echo "GET /avisos-recorrente.png → HTTP $asset_code"
+          echo "GET / → HTTP $root_code"
+
+          if [ "$modal_code" != "200" ] || [ "$asset_code" != "200" ]; then
+            echo "::error::Produção inválida após deploy (modal/asset com status diferente de 200)."
+            exit 1
+          fi
+          if [ "$root_code" != "200" ]; then
+            echo "::warning::Raiz não retorna 200 — validar proxy/nginx e roteamento do domínio."
           fi
